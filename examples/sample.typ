@@ -1,6 +1,6 @@
-// Sample article for the elsevier-cas template, ported from Elsevier's
+// Sample article for the elsevier-cas-unofficial template, ported from Elsevier's
 // cas-dc-sample.tex. Set `layout: "sc"` for the single-column format.
-#import "@preview/elsevier-cas:0.1.0": *
+#import "@preview/elsevier-cas-unofficial:0.1.0": *
 
 #show: article.with(
   layout: "dc",
@@ -120,7 +120,7 @@ The Elsevier cas-dc class is based on the standard article class and supports al
 
 This template depends on the following packages for its proper functioning:
 
-+ `elsevier-cas` for the page layout and front matter;
++ `elsevier-cas-unofficial` for the page layout and front matter;
 + Typst's built-in `bibliography` for citation processing;
 + the `fleqn` option for left aligned equations;
 + `image` for graphics inclusion;
@@ -130,7 +130,7 @@ All the above are part of any standard Typst installation. Therefore, the users 
 
 = Installation
 
-The package is available on Typst Universe as `@preview/elsevier-cas`. Create a new project from the template with `typst init @preview/elsevier-cas`, or import it with `#import "@preview/elsevier-cas:0.1.0": *` in an existing document. The LaTeX original is available at the author resources page at Elsevier (http://www.elsevier.com/locate/latex).
+The package is available on Typst Universe as `@preview/elsevier-cas-unofficial`. Create a new project from the template with `typst init @preview/elsevier-cas-unofficial`, or import it with `#import "@preview/elsevier-cas-unofficial:0.1.0": *` in an existing document. The LaTeX original is available at the author resources page at Elsevier (http://www.elsevier.com/locate/latex).
 
 = Front matter
 
@@ -173,7 +173,7 @@ The `table` function is handy for marking up tabular material. The `toprule`, `m
 
 = Theorem and theorem like environments
 
-`elsevier-cas` provides a few shortcuts to format theorems and theorem-like environments with ease. It provides three functions to define theorem or theorem-like environments:
+`elsevier-cas-unofficial` provides a few shortcuts to format theorems and theorem-like environments with ease. It provides three functions to define theorem or theorem-like environments:
 
 ```typ
 #let theorem = new-theorem(

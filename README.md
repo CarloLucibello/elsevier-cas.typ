@@ -1,13 +1,13 @@
-# elsevier-cas
+# elsevier-cas-unofficial
 
-A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `cas-dc.cls` (double column), version 2.4. It reproduces the page geometry, front matter, first-page notes, running heads and body styles of the LaTeX output. The design takes cues from [`elsearticle`](https://github.com/maucejo/elsearticle), the Typst port of `elsarticle.cls`.
+A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `cas-dc.cls` (double column), version 2.4. It is not affiliated with or endorsed by Elsevier. It reproduces the page geometry, front matter, first-page notes, running heads and body styles of the LaTeX output. The design takes cues from [`elsearticle`](https://github.com/maucejo/elsearticle), the Typst port of `elsarticle.cls`.
 
 ![Title page of the sample article in the double-column (left) and single-column (right) layouts](docs/title-page.png)
 
 ## Usage
 
 ```typ
-#import "@preview/elsevier-cas:0.1.0": *
+#import "@preview/elsevier-cas-unofficial:0.1.0": *
 
 #show: article.with(
   layout: "dc", // "dc" = cas-dc (double column), "sc" = cas-sc (single column)
@@ -30,9 +30,9 @@ A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `
 #bibliography("refs.bib")
 ```
 
-`typst init @preview/elsevier-cas` starts a new project from [`template/main.typ`](template/main.typ), a short skeleton with placeholders and comments. [`examples/sample.typ`](examples/sample.typ) is a port of Elsevier's `cas-dc-sample.tex` that uses every feature. Change `layout: "dc"` to `"sc"` in either file to get the single-column version.
+`typst init @preview/elsevier-cas-unofficial` starts a new project from [`template/main.typ`](template/main.typ), a short skeleton with placeholders and comments. [`examples/sample.typ`](examples/sample.typ) is a port of Elsevier's `cas-dc-sample.tex` that uses every feature. Change `layout: "dc"` to `"sc"` in either file to get the single-column version.
 
-Until the package is on Typst Universe, install it locally. Clone this repository to `~/.local/share/typst/packages/local/elsevier-cas/0.1.0` on Linux, or `~/Library/Application Support/typst/packages/local/elsevier-cas/0.1.0` on macOS, then import `@local/elsevier-cas:0.1.0`.
+Until the package is on Typst Universe, install it locally. Clone this repository to `~/.local/share/typst/packages/local/elsevier-cas-unofficial/0.1.0` on Linux, or `~/Library/Application Support/typst/packages/local/elsevier-cas-unofficial/0.1.0` on macOS, then import `@local/elsevier-cas-unofficial:0.1.0`.
 
 ## Options of `article`
 
