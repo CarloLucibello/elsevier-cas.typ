@@ -133,7 +133,10 @@ The default style is `elsevier-harvard` (author–year), the scheme of `cas-mode
 The LaTeX classes use STIX Two for text and math, Computer Modern Sans for the running head, footer and captions, and Inconsolata for code. The template looks for "STIX Two Text", "STIX Two Math" and "New Computer Modern Sans". If they are missing, it falls back to New Computer Modern, Helvetica or Arial, and DejaVu Sans Mono. Typst prints a warning for each font family it cannot find. To pick other fonts:
 
 ```typ
-#show: els-cas.with(fonts: (sans: "Latin Modern Sans", mono: "Inconsolata"), ...)
+#show: els-cas.with(
+  fonts: (sans: "Latin Modern Sans", mono: "Inconsolata"),
+  // ...other options
+)
 ```
 
 ## Differences from the LaTeX classes

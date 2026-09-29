@@ -35,8 +35,22 @@
 
 /// Page geometry of cas-sc.cls (single column) and cas-dc.cls (double column).
 #let layouts = (
-  sc: (width: 192mm, height: 262mm, top: 19mm, bottom: 19mm, x: 13.7mm, columns: 1),
-  dc: (width: 210mm, height: 280mm, top: 19.5mm, bottom: 18.2mm, x: 18.1mm, columns: 2),
+  sc: (
+    width: 192mm,
+    height: 262mm,
+    top: 19mm,
+    bottom: 19mm,
+    x: 13.7mm,
+    columns: 1,
+  ),
+  dc: (
+    width: 210mm,
+    height: 280mm,
+    top: 19.5mm,
+    bottom: 18.2mm,
+    x: 18.1mm,
+    columns: 2,
+  ),
 )
 #let column-gutter = 18pt
 #let par-indent = 1.5em

@@ -1,7 +1,7 @@
 // Exercises options not covered by template/main.typ.
 // Compile from the repository root, e.g.
 //   typst compile --root . tests/features.typ --input long=true --input blind=true
-#import "../src/lib.typ": *
+#import "/src/lib.typ": *
 
 #let flag(name) = sys.inputs.at(name, default: "false") == "true"
 
@@ -14,14 +14,32 @@
   trans-subtitle: [Un sous-titre traduit],
   title-notes: [A single title note.],
   authors: (
-    (name: "Ada Lovelace", affiliations: "lab", corresponding: true, email: "ada@example.org",
-      twitter: "ada", linkedin: "ada-lovelace", degree: [PhD], credit: [Everything]),
-    (name: "Charles Babbage", affiliations: ("lab", "uni"), deceased: true, orcid: "0000-0002-0000-0000",
-      facebook: "cbabbage", gplus: "cb"),
+    (
+      name: "Ada Lovelace",
+      affiliations: "lab",
+      corresponding: true,
+      email: "ada@example.org",
+      twitter: "ada",
+      linkedin: "ada-lovelace",
+      degree: [PhD],
+      credit: [Everything],
+    ),
+    (
+      name: "Charles Babbage",
+      affiliations: ("lab", "uni"),
+      deceased: true,
+      orcid: "0000-0002-0000-0000",
+      facebook: "cbabbage",
+      gplus: "cb",
+    ),
   ),
   affiliations: (
     lab: [Analytical Engine Laboratory, London, UK],
-    uni: (organization: [University of Cambridge], city: [Cambridge], country: [UK]),
+    uni: (
+      organization: [University of Cambridge],
+      city: [Cambridge],
+      country: [UK],
+    ),
   ),
   abstract: [#lorem(if flag("long") { 700 } else { 60 })
 

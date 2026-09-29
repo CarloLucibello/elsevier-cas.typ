@@ -9,9 +9,7 @@
 #let cor-mark(n, fonts) = with-font(fonts.math, "∗" * n) // \cormark
 #let maltese(fonts) = with-font(fonts.math, "✠") // deceased author
 
-// Affiliations -----------------------------------------------------------------
-
-#let affiliation-fields = ("organization", "addressline", "city", "postcode", "state", "country")
+// Affiliations ----------------------------------------------------------------
 
 /// Format an affiliation. Structured affiliations are dictionaries whose
 /// entries are printed in the order given, each followed by its separator:
@@ -22,7 +20,8 @@
   let parts = ()
   for (key, value) in aff {
     if key.ends-with("sep") { continue }
-    let sep = aff.at(key + "sep", default: if key == "country" { none } else { [,] })
+    let default-sep = if key == "country" { none } else { [,] }
+    let sep = aff.at(key + "sep", default: default-sep)
     parts.push([#value#sep])
   }
   parts.join(" ")
@@ -33,12 +32,12 @@
 #let aff-letter(id, affiliations) = {
   let id = str(id)
   let idx = affiliations.keys().position(k => k == id)
-  if idx != none { numbering("a", idx + 1) } else if id.match(regex("^[0-9]+$")) != none {
-    numbering("a", int(id))
-  } else { "?" }
+  if idx != none { return numbering("a", idx + 1) }
+  if id.match(regex("^[0-9]+$")) != none { return numbering("a", int(id)) }
+  "?"
 }
 
-// Authors ----------------------------------------------------------------------
+// Authors ---------------------------------------------------------------------
 
 #let corresponding-level(author) = {
   let c = author.at("corresponding", default: false)
@@ -46,7 +45,8 @@
 }
 
 #let author-marks(author, affiliations, fonts) = {
-  let marks = as-array(author.at("affiliations", default: ())).map(id => emph(aff-letter(id, affiliations)))
+  let ids = as-array(author.at("affiliations", default: ()))
+  let marks = ids.map(id => emph(aff-letter(id, affiliations)))
   let cor = corresponding-level(author)
   if cor > 0 { marks.push(cor-mark(cor, fonts)) }
   marks += as-array(author.at("footnotes", default: ())).map(n => [#n])
@@ -57,7 +57,11 @@
 #let render-author(author, affiliations, fonts) = {
   let n = split-name(author)
   let given = if n.given != none { text(fill: given-name-color, n.given) }
-  let name = if given == none { n.family } else if is-chinese(author) { [#n.family~#given] } else {
+  let name = if given == none {
+    n.family
+  } else if is-chinese(author) {
+    [#n.family~#given]
+  } else {
     [#given~#n.family]
   }
   let prefix = author.at("prefix", default: none)
@@ -69,7 +73,9 @@
   if prefix != none [#prefix ]
   name
   if suffix != none [ #suffix]
-  if marks.len() > 0 { super(typographic: false, size: 0.67em, marks.join(",")) }
+  if marks.len() > 0 {
+    super(typographic: false, size: 0.67em, marks.join(","))
+  }
   if degree != none [, #degree]
   if role != none [ (#role)]
 }
@@ -115,9 +121,15 @@
   for (mode, body) in titles {
     let st = title-modes.at(mode)
     let size = st.size.first()
-    v(if prev == none { 10pt - 0.7 * size } else { baseline-gap(st.above + st.size.last(), prev, size) })
+    let gap = if prev == none {
+      10pt - 0.7 * size
+    } else {
+      baseline-gap(st.above + st.size.last(), prev, size)
+    }
+    v(gap)
     let marks = if mode == "title" and n-title-notes > 0 {
-      super(typographic: false, size: 0.67em, range(1, n-title-notes + 1).map(i => star-mark(i, fonts)).join(","))
+      let stars = range(1, n-title-notes + 1).map(i => star-mark(i, fonts))
+      super(typographic: false, size: 0.67em, stars.join(","))
     }
     block(with-size(st.size, text(fill: st.fill)[#body#marks]))
     prev = size
@@ -130,9 +142,8 @@
   } else {
     if authors.len() > 0 {
       v(baseline-gap(26.9pt, prev, 12pt))
-      block(with-size(sizes.large, authors
-        .map(a => render-author(a, affiliations, fonts))
-        .join(", ", last: " and ")))
+      let names = authors.map(a => render-author(a, affiliations, fonts))
+      block(with-size(sizes.large, names.join(", ", last: " and ")))
       prev = 12pt
     }
     if affiliations.len() > 0 {
@@ -141,7 +152,9 @@
         set text(style: "italic")
         set par(spacing: 3.45pt)
         for (i, aff) in affiliations.values().enumerate() {
-          par[#super(typographic: false, size: 0.75em, numbering("a", i + 1))#format-affiliation(aff)]
+          let letter = numbering("a", i + 1)
+          let mark = super(typographic: false, size: 0.75em, letter)
+          par[#mark#format-affiliation(aff)]
         }
       }))
       prev = 8pt
@@ -179,11 +192,15 @@
       hrule(0.2pt)
       v(rule-to-text)
       with-size(sizes.footnotesize, {
-        set par(justify: true, first-line-indent: (amount: par-indent, all: false))
+        set par(justify: true)
+        set par(first-line-indent: (amount: par-indent, all: false))
         abstract
       })
     }
-    grid(columns: (25%, 10%, 65%), info, [], abs)
+    grid(
+      columns: (25%, 10%, 65%),
+      info, [], abs,
+    )
 
     // \dashrule{6pt}{3pt}
     v(baseline-gap(8.24pt, 8pt, 0pt))
@@ -226,33 +243,46 @@
   fonts: default-fonts,
 ) = {
   let mono(s) = with-font(fonts.mono, s)
+  let item(value, author) = [#value (#short-name(author))]
+  let url-link(url) = link(url-dest(url), mono(url))
+  let orcid-link(id) = link("https://orcid.org/" + id, mono(id))
   let notes = ()
-  for (i, n) in title-notes.enumerate() { notes.push((star-mark(i + 1, fonts), n, false)) }
+  for (i, n) in title-notes.enumerate() {
+    notes.push((star-mark(i + 1, fonts), n, false))
+  }
   for n in nonum-notes { notes.push(([], n, false)) }
 
   if not blind {
-    for (i, n) in corresponding-notes.enumerate() { notes.push((cor-mark(i + 1, fonts), n, false)) }
+    for (i, n) in corresponding-notes.enumerate() {
+      notes.push((cor-mark(i + 1, fonts), n, false))
+    }
     if authors.any(a => a.at("deceased", default: false)) {
       notes.push((maltese(fonts), [Deceased author.], false))
     }
 
     let emails = collect(authors, "email")
     if emails.len() > 0 {
-      let label = if logos [#icon("email") ] else if emails.len() == 1 [_Email address:_ ] else [_Email addresses:_ ]
-      let items = emails.map(((e, a)) => [#mono(e) (#short-name(a))])
+      let label = if logos {
+        [#icon("email") ]
+      } else if emails.len() == 1 {
+        [_Email address:_ ]
+      } else {
+        [_Email addresses:_ ]
+      }
+      let items = emails.map(((e, a)) => item(mono(e), a))
       notes.push(([], [#label#items.join("; ")], true))
     }
 
     let urls = collect(authors, "url")
     if urls.len() > 0 {
       let label = if logos [#icon("url") ] else [_URL:_ ]
-      let items = urls.map(((u, a)) => [#link(url-dest(u), mono(u)) (#short-name(a))])
+      let items = urls.map(((u, a)) => item(url-link(u), a))
       notes.push(([], [#label#items.join("; ")], true))
     }
 
     let orcids = collect(authors, "orcid")
     if orcids.len() > 0 {
-      let items = orcids.map(((o, a)) => [#link("https://orcid.org/" + o, mono(o)) (#short-name(a))])
+      let items = orcids.map(((o, a)) => item(orcid-link(o), a))
       notes.push(([], [#smallcaps[orcid]\(s): #items.join("; ")], true))
     }
 
@@ -262,13 +292,15 @@
         let label = if logos [#icon(site.key) ] else [#site.name: ]
         let items = ids.map(((id, a)) => {
           let url = if id.contains("://") { id } else { site.base + id }
-          [#link(url, mono(url)) (#short-name(a))]
+          item(link(url, mono(url)), a)
         })
         notes.push(([], [#label#items.join(", ")], true))
       }
     }
 
-    for (i, n) in author-notes.enumerate() { notes.push(([#(i + 1)], n, false)) }
+    for (i, n) in author-notes.enumerate() {
+      notes.push(([#(i + 1)], n, false))
+    }
   }
 
   // The footnotes are anchored at the top of the current column, so their
@@ -296,7 +328,10 @@
     v(baseline-gap(23.9pt, 14pt, 12pt))
     block(spacing: 0pt, with-size(sizes.large, strong(title)))
     v(baseline-gap(18pt, 12pt, 10pt))
-    block(spacing: 0pt, if blind { hide[Authors] } else { authors.map(full-name).join(", ") })
+    let names = if blind { hide[Authors] } else {
+      authors.map(full-name).join(", ")
+    }
+    block(spacing: 0pt, names)
     v(12.3pt)
     body
   },

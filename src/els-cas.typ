@@ -115,11 +115,17 @@
   if pacs != none { classifications.push(([PACS], pacs)) }
 
   let short-title = if short-title == auto { title } else { short-title }
-  let short-authors = if short-authors != auto { short-authors } else if authors.len() == 0 {
+  let short-authors = if short-authors != auto {
+    short-authors
+  } else if authors.len() == 0 {
     none
-  } else if authors.len() == 1 { short-name(authors.first()) } else if authors.len() == 2 {
+  } else if authors.len() == 1 {
+    short-name(authors.first())
+  } else if authors.len() == 2 {
     [#short-name(authors.first()) and #short-name(authors.last())]
-  } else { [#short-name(authors.first()) et al.] }
+  } else {
+    [#short-name(authors.first()) et al.]
+  }
 
   // Document ---------------------------------------------------------------
   set document(
@@ -132,7 +138,11 @@
   // LaTeX puts the first baseline 10pt below the top of the text area and
   // the last one on its bottom; Typst lines reach 7pt above and 3pt below
   // their baseline, hence the 3pt shifts.
-  let page-size = if paper == auto { (width: geom.width, height: geom.height) } else { (paper: paper) }
+  let page-size = if paper == auto {
+    (width: geom.width, height: geom.height)
+  } else {
+    (paper: paper)
+  }
   set page(
     ..page-size,
     margin: (top: geom.top + 3pt, bottom: geom.bottom - 3pt, x: geom.x),
@@ -141,8 +151,8 @@
     header-ascent: 12.4pt,
     footer-descent: 8.9pt,
     header: context {
-      let title-page = query(<cas-title-page>)
-      if title-page.len() > 0 and here().page() > title-page.first().location().page() {
+      let title-page = query(<cas-title-page>).map(m => m.location().page())
+      if title-page.len() > 0 and here().page() > title-page.first() {
         set text(size: 9pt)
         set par(first-line-indent: 0pt)
         with-font(fonts.sans, align(center, short-title))
@@ -154,21 +164,33 @@
       block(spacing: 0pt, line(length: 100%, stroke: 0.2pt))
       v(5.7pt)
       block(spacing: 0pt, {
-        if not blind and short-authors != none { with-font(fonts.sans)[#short-authors: ] }
+        if not blind and short-authors != none {
+          with-font(fonts.sans)[#short-authors: ]
+        }
         emph[Preprint submitted to #journal]
         h(1fr)
-        with-font(fonts.sans)[Page #counter(page).display() of #counter(page).final().first()]
+        let total = counter(page).final().first()
+        with-font(fonts.sans)[Page #counter(page).display() of #total]
       })
     },
   )
   set columns(gutter: column-gutter)
 
   // Text -------------------------------------------------------------------
-  set text(font: fonts.serif, size: 10pt, lang: lang, top-edge: top-edge, bottom-edge: bottom-edge)
+  set text(
+    font: fonts.serif,
+    size: 10pt,
+    lang: lang,
+    top-edge: top-edge,
+    bottom-edge: bottom-edge,
+  )
   let skip = if review { 10pt } else { 2pt } // \doublespacing under `review`
-  set par(justify: true, leading: skip, spacing: skip, first-line-indent: (amount: par-indent, all: true))
+  set par(justify: true, leading: skip, spacing: skip)
+  set par(first-line-indent: (amount: par-indent, all: true))
   set par.line(
-    numbering: if line-numbers { n => text(size: 6pt, fill: luma(40%), str(n)) },
+    numbering: if line-numbers {
+      n => text(size: 6pt, fill: luma(40%), str(n))
+    },
     numbering-scope: "page",
   )
   show raw: it => with-font(fonts.mono, it)
@@ -187,9 +209,12 @@
   show par: it => {
     if it.first-line-indent.amount == 0pt { return it }
     context {
-      let eq-end = query(selector(<cas-eq-end>).before(here())).at(-1, default: none)
-      if eq-end == none or eq-end.location().position() != here().position() { return it }
-      if query(selector(<cas-parbreak>).after(eq-end.location()).before(here())).len() > 0 { return it }
+      let eq-ends = query(selector(<cas-eq-end>).before(here()))
+      let eq-end = eq-ends.at(-1, default: none)
+      if eq-end == none { return it }
+      let at-eq-end = eq-end.location().position() == here().position()
+      let breaks = selector(<cas-parbreak>).after(eq-end.location())
+      if not at-eq-end or query(breaks.before(here())).len() > 0 { return it }
       let fields = it.fields()
       let body = fields.remove("body")
       let _ = fields.remove("first-line-indent", default: none)
@@ -198,7 +223,9 @@
   }
 
   // Headings ---------------------------------------------------------------
-  set heading(numbering: (..n) => if n.pos().len() <= 3 { numbering("1.1", ..n) })
+  // Sections, subsections and subsubsections are numbered (secnumdepth 3).
+  let section-numbering(..n) = if n.pos().len() <= 3 { numbering("1.1", ..n) }
+  set heading(numbering: section-numbering)
   show heading: it => {
     if it.level >= 4 {
       // \paragraph and \subparagraph: run-in headings
@@ -219,22 +246,31 @@
       ((11pt, 13pt), "bold", "normal", 12.3pt, 1.8pt),
       ((10.5pt, 12pt), "bold", "italic", 11.65pt, 1.95pt),
     ).at(it.level - 1)
-    block(above: above, below: below, sticky: true, breakable: false, with-size(size, {
+    let title = with-size(size, {
       set text(weight: weight, style: style)
       set par(justify: false, first-line-indent: 0pt)
       context {
-        let num = if it.numbering != none { counter(heading).display(it.numbering) }
+        let num = if it.numbering != none {
+          counter(heading).display(it.numbering)
+        }
         let number = if num not in (none, []) [#num.#h(0.5em)]
         let hang = if number != none { measure(number).width } else { 0pt }
         par(hanging-indent: hang)[#number#it.body]
       }
-    }))
+    })
+    block(above: above, below: below, sticky: true, breakable: false, title)
   }
 
   // Lists ------------------------------------------------------------------
-  set list(indent: 1.47em, body-indent: 0.5em, spacing: 10pt, marker: ([•], [–], [∗], [·]))
+  set list(marker: ([•], [–], [∗], [·]))
+  set list(indent: 1.47em, body-indent: 0.5em, spacing: 10pt)
   show list: set block(above: 10pt, below: 10pt)
-  set enum(numbering: "1.a.i.A.", indent: 1.25em, body-indent: 0.5em, spacing: 3.2pt)
+  set enum(
+    numbering: "1.a.i.A.",
+    indent: 1.25em,
+    body-indent: 0.5em,
+    spacing: 3.2pt,
+  )
   show enum: set block(above: 8pt, below: 8pt)
 
   // Equations --------------------------------------------------------------
@@ -257,12 +293,15 @@
   show figure.where(kind: table): set figure.caption(position: top)
   show figure.where(kind: table): set figure(gap: 5pt)
   // Figure and table environments are set in \sffamily\small.
-  show figure.where(kind: image): it => with-font(fonts.sans, with-size(sizes.small, it))
-  show figure.where(kind: table): it => with-font(fonts.sans, with-size(sizes.small, it))
+  let sans-small(it) = with-font(fonts.sans, with-size(sizes.small, it))
+  show figure.where(kind: image): sans-small
+  show figure.where(kind: table): sans-small
   show figure.caption: it => {
     with-size(sizes.small, context {
       set par(first-line-indent: 0pt, justify: true)
-      let label = if it.numbering != none { [#it.supplement~#it.counter.display(it.numbering)] } else {
+      let label = if it.numbering != none {
+        [#it.supplement~#it.counter.display(it.numbering)]
+      } else {
         it.supplement
       }
       if it.kind == table {
@@ -271,7 +310,9 @@
       } else {
         // "Figure 1: ...", centred when it fits on one line
         let cap = [#strong[#label:] #it.body]
-        measure-layout(size => if measure(cap).width <= size.width { align(center, cap) } else { cap })
+        measure-layout(size => if measure(cap).width <= size.width {
+          align(center, cap)
+        } else { cap })
       }
     })
   }
@@ -286,15 +327,22 @@
     indent: 0pt,
   )
   // Front-matter notes carry their mark in the author list, not in the text.
-  show footnote: it => if it.has("label") and it.label in (<cas-frontnote>, <cas-frontnote-ragged>) {
+  show footnote: it => if (
+    it.has("label") and it.label in (<cas-frontnote>, <cas-frontnote-ragged>)
+  ) {
     []
   } else { it }
   show footnote.entry: it => {
-    let ragged = it.note.has("label") and it.note.label == <cas-frontnote-ragged>
+    let ragged = (
+      it.note.has("label") and it.note.label == <cas-frontnote-ragged>
+    )
     with-size(sizes.footnotesize, context {
       set par(first-line-indent: 0pt, hanging-indent: 0pt, justify: not ragged)
       set par.line(numbering: none)
-      let num = numbering(it.note.numbering, ..counter(footnote).at(it.note.location()))
+      let num = numbering(
+        it.note.numbering,
+        ..counter(footnote).at(it.note.location()),
+      )
       [#box(width: 18pt)[#h(1fr)#super(size: 0.75em, num)]#it.note.body]
     })
   }
@@ -307,11 +355,23 @@
   cas-info.update((authors: authors, blind: blind))
 
   if graphical-abstract != none {
-    prelim-page([Graphical Abstract], graphical-abstract, title: title, authors: authors, blind: blind)
+    prelim-page(
+      [Graphical Abstract],
+      graphical-abstract,
+      title: title,
+      authors: authors,
+      blind: blind,
+    )
   }
   let highlights = as-array(highlights)
   if highlights.len() > 0 {
-    prelim-page([Highlights], list(..highlights), title: title, authors: authors, blind: blind)
+    prelim-page(
+      [Highlights],
+      list(..highlights),
+      title: title,
+      authors: authors,
+      blind: blind,
+    )
   }
   counter(page).update(1)
   [#metadata(none)<cas-title-page>]

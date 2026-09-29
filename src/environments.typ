@@ -66,7 +66,9 @@
 
 /// Render theorem figures created by `new-theorem`; applied by `els-cas`.
 #let show-theorem(it) = {
-  if type(it.kind) != str or not it.kind.starts-with(thm-kind-prefix) { return it }
+  if type(it.kind) != str or not it.kind.starts-with(thm-kind-prefix) {
+    return it
+  }
   let title = if it.caption != none { it.caption.body }
   block(width: 100%, breakable: true, above: 10pt, below: 10pt, {
     set align(left)
@@ -93,7 +95,9 @@
 
 /// Print the CRediT authorship contribution statement from the `credit`
 /// entries of the authors (`\printcredits`).
-#let print-credits(title: [CRediT authorship contribution statement]) = context {
+#let print-credits(
+  title: [CRediT authorship contribution statement],
+) = context {
   let info = cas-info.get()
   let credited = info.authors.filter(a => a.at("credit", default: none) != none)
   if credited.len() > 0 {
@@ -118,9 +122,13 @@
   assert(pos.len() in (1, 2), message: "bio takes an optional photo and a body")
   let body = pos.last()
   let photo = if pos.len() == 2 { pos.first() }
-  assert(type(photo) != str, message: "pass the photo as `image(\"...\")`, not as a path string")
+  assert(
+    type(photo) != str,
+    message: "pass the photo as `image(\"...\")`, not as a path string",
+  )
   if not cas-info.get().blind {
-    with-size((8pt, 10pt), { // \casbiographyfont
+    // \casbiographyfont
+    with-size((8pt, 10pt), {
       set par(first-line-indent: 0pt)
       if photo == none {
         block(above: 6.4pt, below: 6.4pt, body)

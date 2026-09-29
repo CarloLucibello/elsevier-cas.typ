@@ -23,7 +23,9 @@
 )
 
 /// Wrap a single value into an array; `none` becomes the empty array.
-#let as-array(x) = if x == none { () } else if type(x) == array { x } else { (x,) }
+#let as-array(x) = {
+  if x == none { () } else if type(x) == array { x } else { (x,) }
+}
 
 /// Best-effort conversion of content to a plain string (for PDF metadata).
 #let to-str(it) = {
@@ -46,7 +48,10 @@
 #let split-name(author) = {
   let name = author.name
   if type(name) == dictionary {
-    return (given: name.at("given", default: none), family: name.at("family", default: none))
+    return (
+      given: name.at("given", default: none),
+      family: name.at("family", default: none),
+    )
   }
   if type(name) != str { return (given: none, family: name) }
   let parts = name.split(" ").filter(p => p != "")
@@ -61,7 +66,8 @@
 /// The name in reading order, without prefix or suffix.
 #let full-name(author) = {
   let n = split-name(author)
-  let parts = if is-chinese(author) { (n.family, n.given) } else { (n.given, n.family) }
+  let parts = (n.given, n.family)
+  if is-chinese(author) { parts = parts.rev() }
   parts.filter(p => p != none).join(" ")
 }
 

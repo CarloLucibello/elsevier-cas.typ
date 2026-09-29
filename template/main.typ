@@ -71,7 +71,10 @@
       country: [India],
     ),
   ),
-  corresponding-notes: ([Corresponding author], [Principal corresponding author]),
+  corresponding-notes: (
+    [Corresponding author],
+    [Principal corresponding author],
+  ),
   author-notes: (
     [This is the first author footnote, but is common to third author as well.],
     [Another author footnote, this is a very long footnote and it should be a really long footnote. But this footnote is not yet sufficiently long enough to make two lines of footnote text.],
@@ -84,7 +87,12 @@
     `abstract: [...]` and `keywords: (...)` contain the abstract and keywords respectively. \
     Each keyword is a separate entry of the `keywords` array.
   ],
-  keywords: ([quadrupole exciton], [polariton], [#smallcaps[wgm]], [#smallcaps[bec]]),
+  keywords: (
+    [quadrupole exciton],
+    [polariton],
+    [#smallcaps[wgm]],
+    [#smallcaps[bec]],
+  ),
   graphical-abstract: image("figs/cas-grabs.pdf"),
   highlights: (
     [Research highlights item 1],
@@ -127,7 +135,9 @@ The package is available on Typst Universe as `@preview/els-cas`. Create a new p
 = Front matter
 
 The author names and affiliations could be formatted in two ways:
-#enum(numbering: "(1)")[Group the authors per affiliation.][Use footnotes to indicate the affiliations.]
+#enum(numbering: "(1)")[Group the authors per affiliation.][
+  Use footnotes to indicate the affiliations.
+]
 See the front matter of this document for examples. You are recommended to conform your choice to the journal you are submitting to.
 
 = Bibliography styles
