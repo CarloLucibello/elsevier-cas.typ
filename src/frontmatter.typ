@@ -13,28 +13,33 @@
 
 /// Format an affiliation. Structured affiliations are dictionaries whose
 /// entries are printed in the order given, each followed by its separator:
-/// `<key>sep` if present, else "," (none after `country`), like
-/// `\affiliation{organization=..., postcodesep={}, ...}`.
+/// `<key>sep` if present, else "," (none after `country` and after the last
+/// entry), like `\affiliation{organization=..., postcodesep={}, ...}`.
 #let format-affiliation(aff) = {
   if type(aff) != dictionary { return aff }
+  let keys = aff.keys().filter(k => not k.ends-with("sep"))
   let parts = ()
-  for (key, value) in aff {
-    if key.ends-with("sep") { continue }
-    let default-sep = if key == "country" { none } else { [,] }
-    let sep = aff.at(key + "sep", default: default-sep)
-    parts.push([#value#sep])
+  for (i, key) in keys.enumerate() {
+    let last = key == "country" or i == keys.len() - 1
+    let sep = aff.at(key + "sep", default: if last { none } else { [,] })
+    parts.push([#aff.at(key)#sep])
   }
   parts.join(" ")
 }
 
 /// The letter marking an affiliation: its position in `affiliations`, or
 /// the letter of a numeric id that is not defined (as the LaTeX class does).
+/// Any other unknown id is an error.
 #let aff-letter(id, affiliations) = {
   let id = str(id)
   let idx = affiliations.keys().position(k => k == id)
   if idx != none { return numbering("a", idx + 1) }
-  if id.match(regex("^[0-9]+$")) != none { return numbering("a", int(id)) }
-  "?"
+  assert(
+    id.match(regex("^[0-9]+$")) != none,
+    message: "unknown affiliation id \"" + id + "\"; the ids in "
+      + "`affiliations` are " + repr(affiliations.keys()),
+  )
+  numbering("a", int(id))
 }
 
 // Authors ---------------------------------------------------------------------
@@ -242,7 +247,7 @@
   logos: true,
   fonts: default-fonts,
 ) = {
-  let mono(s) = with-font(fonts.mono, s)
+  let mono(s) = with-mono(fonts.mono, s)
   let item(value, author) = [#value (#short-name(author))]
   let url-link(url) = link(url-dest(url), mono(url))
   let orcid-link(id) = link("https://orcid.org/" + id, mono(id))

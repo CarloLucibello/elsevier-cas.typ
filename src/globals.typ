@@ -55,6 +55,15 @@
 #let column-gutter = 18pt
 #let par-indent = 1.5em
 #let math-indent = 2.5em // \mathindent under the `fleqn` option
+#let list-margins = (25pt, 22pt, 18.7pt, 17pt) // \leftmargini to \leftmarginiv
+#let label-sep = 5pt // \labelsep
+
+// booktabs, which the LaTeX classes load while the font is still cmr10
+// (1em = 10pt, 1ex = 4.31pt).
+#let heavy-rule-width = 0.8pt // \heavyrulewidth = .08em
+#let light-rule-width = 0.5pt // \lightrulewidth = .05em
+#let above-rule-sep = 1.72pt // \aboverulesep = .4ex
+#let below-rule-sep = 2.8pt // \belowrulesep = .65ex
 
 /// Document-wide information needed after the front matter (by
 /// `print-credits` and `bio`).

@@ -2,7 +2,7 @@
 
 A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `cas-dc.cls` (double column), version 2.4. It reproduces the page geometry, front matter, first-page notes, running heads and body styles of the LaTeX output. The design takes cues from [`elsearticle`](https://github.com/maucejo/elsearticle), the Typst port of `elsarticle.cls`.
 
-![Title page of the sample article](thumbnail.png)
+![Title page of the sample article in the double-column (left) and single-column (right) layouts](docs/title-page.png)
 
 ## Usage
 
@@ -30,7 +30,7 @@ A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `
 #bibliography("refs.bib")
 ```
 
-[`template/main.typ`](template/main.typ) is a port of `cas-dc-sample.tex` that uses every feature. Change `layout: "dc"` to `"sc"` to get the single-column version. Start a new project from it with `typst init @preview/els-cas`.
+`typst init @preview/els-cas` starts a new project from [`template/main.typ`](template/main.typ), a short skeleton with placeholders and comments. [`examples/sample.typ`](examples/sample.typ) is a port of Elsevier's `cas-dc-sample.tex` that uses every feature. Change `layout: "dc"` to `"sc"` in either file to get the single-column version.
 
 Until the package is on Typst Universe, install it locally. Clone this repository to `~/.local/share/typst/packages/local/els-cas/0.1.0` on Linux, or `~/Library/Application Support/typst/packages/local/els-cas/0.1.0` on macOS, then import `@local/els-cas:0.1.0`.
 
@@ -57,7 +57,7 @@ Until the package is on Typst Universe, install it locally. Clone this repositor
 | `journal` | `[Elsevier]` | Footer text: "Preprint submitted to *journal*". |
 | `blind` | `false` | Double-blind review: hides authors, affiliations, author notes, CRediT roles and biographies. |
 | `review` | `false` | Double line spacing. |
-| `long-title` | `false` | Allows front matter longer than one page (`longmktitle`). In the double-column layout the body then starts below it. |
+| `long-title` | `false` | Allows front matter longer than one page (`longmktitle`). Without it, a double-column front matter that does not fit on the first page is an error. In the double-column layout the body then starts below it, set in a `columns` container: `#pagebreak()` is turned into column breaks, and `#set page(...)` or `#page(...)` cannot be used in the body. |
 | `logos` | `true` | Icons in front of emails, URLs and social links; `false` writes "Email address:", "URL:" and so on instead. |
 | `fleqn` | `true` | Display equations aligned left and indented. |
 | `line-numbers` | `false` | Line numbers restarting on each page. |
@@ -73,8 +73,8 @@ Each author is a dictionary. Only `name` is required.
 | --- | --- |
 | `name` | A string is split at the last space into given names (printed grey, as in CAS) and surname. `(given: "William", family: "J. Hansen")` sets the split explicitly. |
 | `style` | `"chinese"`: surname first, split at the first space. |
-| `affiliations` | One id or an array of ids from `affiliations`, printed as letters a, b, … |
-| `corresponding` | `true` or `n`: corresponding-author mark with `n` asterisks. The mark refers to the `n`-th entry of `corresponding-notes`. |
+| `affiliations` | One id or an array of ids from `affiliations`, printed as letters a, b, … An id missing from `affiliations` is an error, except a number `n`, which is printed as the `n`-th letter, as in LaTeX. |
+| `corresponding` | `true` or `n`: corresponding-author mark with `n` asterisks. The mark refers to the `n`-th entry of `corresponding-notes`; it is an error if there is no such entry. |
 | `footnotes` | Number or array of numbers of `author-notes`. |
 | `email`, `url`, `orcid` | Strings or arrays of strings. They are collected into first-page notes. |
 | `twitter`, `facebook`, `linkedin`, `gplus` | Account names or full URLs. |
@@ -84,7 +84,7 @@ Each author is a dictionary. Only `name` is required.
 
 ### Affiliations
 
-An affiliation is either plain content or a dictionary like the keys of `\affiliation`. The entries are printed in the given order, each followed by a comma. The exception is `country`, which gets no separator. Add `<key>sep` to change the separator after an entry:
+An affiliation is either plain content or a dictionary like the keys of `\affiliation`. The entries are printed in the given order, each followed by a comma. The exceptions are `country` and the last entry, which get no separator. Add `<key>sep` to change the separator after an entry:
 
 ```typ
 "2": (organization: [World Scientific University], addressline: [Street 29],
@@ -118,10 +118,16 @@ Figures and tables are captioned in a small sans-serif font: "**Figure 1:** …"
 #figure(image("wide.png"), caption: [...], placement: top, scope: "parent")
 ```
 
-Tables have no strokes by default. Draw booktabs-style rules with `toprule`, `midrule` and `bottomrule`:
+Tables have no strokes, and rows are spaced as in LaTeX. Draw booktabs rules with `toprule`, `midrule` and `bottomrule`; like booktabs, they leave some space above and below them:
 
 ```typ
 #figure(caption: [...], table(columns: 3, toprule, [A], [B], [C], midrule, [1], [2], [3], bottomrule))
+```
+
+A table caption spans the column. To make it narrower, put the table in a block with a width, the equivalent of `\begin{table}[width=.9\linewidth]` with a `tabular*` of `\tblwidth`:
+
+```typ
+#figure(caption: [...], block(width: 90%, table(columns: (1fr, 1fr), ...)))
 ```
 
 ### Bibliography
@@ -143,10 +149,15 @@ The LaTeX classes use STIX Two for text and math, Computer Modern Sans for the r
 
 - Author groups (`augroup`, `collaboration`) and affiliations printed as footnotes (`\address[..][foot=true]`) are not ported.
 - Biography text runs beside the photo; it does not wrap below it.
-- Second-level enumerations are labelled "a." instead of "(a)".
-- Table captions span the column rather than the table width.
 - First-page notes always sit at the bottom of the first page or column.
+- A structured affiliation gets no comma after its last entry. LaTeX prints one unless that entry is `country`.
+- Monospace text (code, URLs, email addresses and ORCIDs) is set at 0.8em, the size Typst gives `raw` text. LaTeX sets it at the text size.
+- In the double-column layout, a front matter too tall for the first page is an error unless `long-title: true` is set. LaTeX lets it run off the page.
 
 ## License
 
-The Typst code is released under the MIT license. The icons in `assets/` and the sample figures in `template/figs/` come from Elsevier's CAS LaTeX bundle, distributed under the LaTeX Project Public License.
+The package is released under three licenses, depending on the file:
+
+- The code in `src/` is under the [MIT license](LICENSE).
+- The starter project in `template/`, which `typst init` copies into new projects, is under [MIT-0](https://spdx.org/licenses/MIT-0.html), so you can use and redistribute the files it creates without attribution.
+- The icons in `assets/`, and the sample article in `examples/` (text, figures and bibliography), come from or are adapted from Elsevier's CAS LaTeX bundle, distributed under the [LaTeX Project Public License 1.3c](https://www.latex-project.org/lppl/lppl-1-3c/). The `examples/` folder is not part of the downloaded package.

@@ -6,9 +6,107 @@
 // Tables -------------------------------------------------------------------
 
 /// Booktabs rules (`\toprule`, `\midrule`, `\bottomrule`) for use in `table`.
-#let toprule = table.hline(stroke: 0.8pt)
-#let midrule = table.hline(stroke: 0.5pt)
-#let bottomrule = table.hline(stroke: 0.8pt)
+/// Their label lets `show-booktabs` find them.
+#let toprule = [#table.hline(stroke: heavy-rule-width)<cas-toprule>]
+#let midrule = [#table.hline(stroke: light-rule-width)<cas-midrule>]
+#let bottomrule = [#table.hline(stroke: heavy-rule-width)<cas-bottomrule>]
+
+/// Space above and below each rule (\abovetopsep and \belowbottomsep are 0).
+#let booktabs-rules = (
+  cas-toprule: (above: 0pt, below: below-rule-sep, width: heavy-rule-width),
+  cas-midrule: (
+    above: above-rule-sep,
+    below: below-rule-sep,
+    width: light-rule-width,
+  ),
+  cas-bottomrule: (above: above-rule-sep, below: 0pt, width: heavy-rule-width),
+)
+
+#let rule-kind(child) = {
+  let label = child.at("label", default: none)
+  if label != none and str(label) in booktabs-rules { str(label) }
+}
+
+/// Leave the space of booktabs around its rules: a table line takes no
+/// room, so the rows next to a rule get extra inset. Applied by `els-cas`.
+#let show-booktabs(it) = {
+  let fields = it.fields()
+  let children = fields.remove("children")
+  // A label stays with the original table.
+  let _ = fields.remove("label", default: none)
+  let is-group(c) = c.func() in (table.header, table.footer)
+  let flat = children.map(c => if is-group(c) { c.children } else { c })
+  flat = flat.flatten()
+  if flat.all(c => rule-kind(c) == none) { return it }
+
+  // Find the row boundary of each rule by placing the cells as Typst does:
+  // a line without `y` goes below the last automatically placed cell.
+  let columns = fields.at("columns", default: auto)
+  let n = if type(columns) == int { columns } else if type(columns) == array {
+    columns.len()
+  } else { 1 }
+  let taken = (:) // grid slots filled by row-spanning cells
+  let next = 0 // slot of the next automatically placed cell
+  let pad-top = (:) // row -> extra inset
+  let pad-bottom = (:)
+  for c in flat {
+    let kind = rule-kind(c)
+    if kind != none {
+      let y = calc.div-euclid(next + n - 1, n)
+      let rule = booktabs-rules.at(kind)
+      pad-top.insert(str(y), rule.below + rule.width / 2)
+      if y > 0 { pad-bottom.insert(str(y - 1), rule.above + rule.width / 2) }
+    } else if c.func() not in (table.hline, table.vline) {
+      let cell = c.func() == table.cell
+      let colspan = if cell { calc.min(c.at("colspan", default: 1), n) } else { 1 }
+      let rowspan = if cell { c.at("rowspan", default: 1) } else { 1 }
+      let placed = cell and (c.at("x", default: auto), c.at("y", default: auto)) != (auto, auto)
+      if not placed {
+        let fits(i) = (
+          calc.rem(i, n) + colspan <= n
+            and range(colspan).all(k => str(i + k) not in taken)
+        )
+        let i = next
+        while not fits(i) { i += 1 }
+        for dy in range(rowspan) {
+          for dx in range(colspan) { taken.insert(str(i + dy * n + dx), true) }
+        }
+        next = i + colspan
+      }
+    }
+  }
+
+  let base = fields.at("inset", default: 0pt)
+  let side(inset, key, axis) = if type(inset) == dictionary {
+    inset.at(key, default: inset.at(axis, default: inset.at(
+      "rest",
+      default: 0pt,
+    )))
+  } else { inset }
+  fields.insert("inset", (x, y) => {
+    let inset = if type(base) == function { base(x, y) } else if (
+      type(base) == array
+    ) { base.at(calc.rem(x, base.len())) } else { base }
+    (
+      left: side(inset, "left", "x"),
+      right: side(inset, "right", "x"),
+      top: side(inset, "top", "y") + pad-top.at(str(y), default: 0pt),
+      bottom: side(inset, "bottom", "y") + pad-bottom.at(str(y), default: 0pt),
+    )
+  })
+
+  // Rebuild the table with unlabelled rules, which this rule leaves alone.
+  let unlabel(c) = if rule-kind(c) != none {
+    let f = c.fields()
+    let _ = f.remove("label", default: none)
+    table.hline(..f)
+  } else if is-group(c) {
+    let f = c.fields()
+    let kids = f.remove("children")
+    c.func()(..f, ..kids.map(unlabel))
+  } else { c }
+  table(..fields, ..children.map(unlabel))
+}
 
 // Theorems -----------------------------------------------------------------
 

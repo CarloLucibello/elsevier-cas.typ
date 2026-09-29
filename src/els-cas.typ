@@ -47,7 +47,8 @@
 /// - blind (bool): hide author information for double-blind review.
 /// - review (bool): double line spacing.
 /// - long-title (bool): let a long front matter break across pages
-///   (`longmktitle`); in two-column layout the body then starts below it.
+///   (`longmktitle`); in two-column layout the body then starts below it,
+///   and `pagebreak()` in the body is emulated with column breaks.
 /// - logos (bool): icons before emails, URLs and social links.
 /// - fleqn (bool): left-align display equations.
 /// - line-numbers (bool): number the lines of each page.
@@ -100,10 +101,16 @@
   let author-notes = as-array(author-notes)
   let keywords = as-array(keywords)
 
+  let n-cor = calc.max(0, ..authors.map(corresponding-level))
   let corresponding-notes = if corresponding-notes == auto {
-    let n = calc.max(0, ..authors.map(corresponding-level))
-    range(n).map(_ => [Corresponding author])
+    range(n-cor).map(_ => [Corresponding author])
   } else { as-array(corresponding-notes) }
+  assert(
+    n-cor <= corresponding-notes.len(),
+    message: "an author has `corresponding: " + str(n-cor) + "`, which needs "
+      + str(n-cor) + " `corresponding-notes`; got "
+      + str(corresponding-notes.len()),
+  )
 
   let classifications = ()
   if msc != none {
@@ -198,7 +205,7 @@
   show raw.where(block: true): set par(leading: 4pt)
   show link: set text(fill: link-color)
   show link: it => if type(it.dest) == str and to-str(it.body) == it.dest {
-    with-font(fonts.mono, it)
+    with-mono(fonts.mono, it)
   } else { it }
   show ref: set text(fill: link-color)
   show cite: set text(fill: link-color)
@@ -262,15 +269,48 @@
   }
 
   // Lists ------------------------------------------------------------------
-  set list(marker: ([•], [–], [∗], [·]))
-  set list(indent: 1.47em, body-indent: 0.5em, spacing: 10pt)
+  // As in LaTeX, the items of a list at depth k are indented by
+  // \leftmargin of that depth, and the label is right-aligned \labelsep
+  // before them (and overhangs to the left if it is too wide).
+  let list-label(depth, label) = box(
+    width: list-margins.at(calc.min(depth, 3)) - label-sep,
+    align(right, label),
+  )
+  // \labelitemi to \labelitemiv; LaTeX takes \textasteriskcentered and
+  // \textperiodcentered from the math font. The bullet of STIX Two is
+  // smaller than the one of STIX, unlike that of (built-in) New Computer
+  // Modern Math.
+  let markers = (
+    text(font: "New Computer Modern Math")[•],
+    text(weight: "bold")[–],
+    $ast.op$,
+    $dot.op$,
+  )
+  set list(
+    marker: depth => list-label(depth, markers.at(calc.rem(depth, 4))),
+    indent: 0pt,
+    body-indent: label-sep,
+    spacing: 10pt,
+  )
   show list: set block(above: 10pt, below: 10pt)
+  // Labels 1., (a), i., A. by depth, set upright. A pattern like
+  // "1.(a)i.A." cannot do this (all levels share its prefix and suffix),
+  // so a function receives the numbers of all levels (`full: true`). `full`
+  // is only set for this function, so that a user's pattern keeps its usual
+  // meaning; its label starts at the margin, like `enumerate[(1)]` in CAS.
+  let enum-numbering(..n) = {
+    let n = n.pos()
+    let depth = n.len() - 1
+    let pattern = ("1.", "(a)", "i.", "A.").at(calc.min(depth, 3))
+    list-label(depth, text(style: "normal", numbering(pattern, n.last())))
+  }
   set enum(
-    numbering: "1.a.i.A.",
-    indent: 1.25em,
-    body-indent: 0.5em,
+    numbering: enum-numbering,
+    indent: 0pt,
+    body-indent: label-sep,
     spacing: 3.2pt,
   )
+  show enum.where(numbering: enum-numbering): set enum(full: true)
   show enum: set block(above: 8pt, below: 8pt)
 
   // Equations --------------------------------------------------------------
@@ -289,13 +329,32 @@
   // Figures and tables -----------------------------------------------------
   set figure(gap: 6pt)
   show figure: set block(above: 12pt, below: 12pt) // \intextsep
-  set table(stroke: none, inset: (x: 6pt, y: 2pt), align: start)
+  // Cells: \tabcolsep, and the strut of LaTeX tables (0.7\baselineskip
+  // above the baseline, 0.3\baselineskip below). Lines span 0.7em above to
+  // 0.3em below it, and \baselineskip is 2pt more than the size at \small
+  // and \normalsize.
+  set table(
+    stroke: none,
+    inset: (x: 6pt, top: 1.4pt, bottom: 0.6pt),
+    align: start,
+  )
+  show table: show-booktabs
   show figure.where(kind: table): set figure.caption(position: top)
   show figure.where(kind: table): set figure(gap: 5pt)
   // Figure and table environments are set in \sffamily\small.
   let sans-small(it) = with-font(fonts.sans, with-size(sizes.small, it))
   show figure.where(kind: image): sans-small
   show figure.where(kind: table): sans-small
+  // CAS sets a table caption in a \parbox as wide as the `width` option of
+  // the table (default: the column), which is also \tblwidth for the
+  // tabular. Here that width is the one of a block around the table.
+  show figure.where(kind: table): it => {
+    let width = if it.body.func() in (block, box) {
+      it.body.at("width", default: auto)
+    } else { auto }
+    show figure.caption: cap => block(width: width, cap)
+    it
+  }
   show figure.caption: it => {
     with-size(sizes.small, context {
       set par(first-line-indent: 0pt, justify: true)
@@ -407,19 +466,41 @@
     fonts: fonts,
   )
 
+  // Body footnotes are numbered after the author notes, if these are shown.
+  let first-footnote = if blind { 0 } else { author-notes.len() }
+
   if two-columns and not long-title {
     // \twocolumn[\MaketitleBox]: the title block spans both columns and the
-    // first-page notes go to the foot of the first column.
+    // first-page notes go to the foot of the first column. A float cannot
+    // break across pages, so a taller title block would overlap the footer.
+    context assert(
+      measure(title-block, width: page.width - 2 * geom.x).height
+        <= page.height - geom.top - geom.bottom,
+      message: "the front matter does not fit on the first page; "
+        + "set `long-title: true`",
+    )
     place(top, scope: "parent", float: true, clearance: 7.6pt, title-block)
     notes
-    counter(footnote).update(author-notes.len())
+    counter(footnote).update(first-footnote)
     body
   } else {
     notes
     title-block
-    counter(footnote).update(author-notes.len())
+    counter(footnote).update(first-footnote)
     if two-columns {
       v(7.6pt)
+      // Page breaks are not allowed inside the `columns` container: break
+      // columns until a new page starts. A weak break at the top of a page
+      // is skipped.
+      show pagebreak: it => context {
+        let pos = here().position()
+        let first-column = pos.x < page.width / 2
+        let at-top = pos.y <= geom.top + 3pt + 0.01pt
+        if not (it.weak and first-column and at-top) {
+          colbreak()
+          if first-column { colbreak() }
+        }
+      }
       block(above: 0pt, columns(geom.columns, body))
     } else {
       v(4.8pt)
