@@ -1,4 +1,4 @@
-# els-cas
+# elsevier-cas
 
 A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `cas-dc.cls` (double column), version 2.4. It reproduces the page geometry, front matter, first-page notes, running heads and body styles of the LaTeX output. The design takes cues from [`elsearticle`](https://github.com/maucejo/elsearticle), the Typst port of `elsarticle.cls`.
 
@@ -7,9 +7,9 @@ A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `
 ## Usage
 
 ```typ
-#import "@preview/els-cas:0.1.0": *
+#import "@preview/elsevier-cas:0.1.0": *
 
-#show: els-cas.with(
+#show: article.with(
   layout: "dc", // "dc" = cas-dc (double column), "sc" = cas-sc (single column)
   title: [Title of the article],
   short-title: [Running head],
@@ -30,11 +30,11 @@ A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `
 #bibliography("refs.bib")
 ```
 
-`typst init @preview/els-cas` starts a new project from [`template/main.typ`](template/main.typ), a short skeleton with placeholders and comments. [`examples/sample.typ`](examples/sample.typ) is a port of Elsevier's `cas-dc-sample.tex` that uses every feature. Change `layout: "dc"` to `"sc"` in either file to get the single-column version.
+`typst init @preview/elsevier-cas` starts a new project from [`template/main.typ`](template/main.typ), a short skeleton with placeholders and comments. [`examples/sample.typ`](examples/sample.typ) is a port of Elsevier's `cas-dc-sample.tex` that uses every feature. Change `layout: "dc"` to `"sc"` in either file to get the single-column version.
 
-Until the package is on Typst Universe, install it locally. Clone this repository to `~/.local/share/typst/packages/local/els-cas/0.1.0` on Linux, or `~/Library/Application Support/typst/packages/local/els-cas/0.1.0` on macOS, then import `@local/els-cas:0.1.0`.
+Until the package is on Typst Universe, install it locally. Clone this repository to `~/.local/share/typst/packages/local/elsevier-cas/0.1.0` on Linux, or `~/Library/Application Support/typst/packages/local/elsevier-cas/0.1.0` on macOS, then import `@local/elsevier-cas:0.1.0`.
 
-## Options of `els-cas`
+## Options of `article`
 
 | Option | Default | Description |
 | --- | --- | --- |
@@ -139,7 +139,7 @@ The default style is `elsevier-harvard` (author–year), the scheme of `cas-mode
 The LaTeX classes use STIX Two for text and math, Computer Modern Sans for the running head, footer and captions, and Inconsolata for code. The template looks for "STIX Two Text", "STIX Two Math" and "New Computer Modern Sans". If they are missing, it falls back to New Computer Modern, Helvetica or Arial, and DejaVu Sans Mono. Typst prints a warning for each font family it cannot find. To pick other fonts:
 
 ```typ
-#show: els-cas.with(
+#show: article.with(
   fonts: (sans: "Latin Modern Sans", mono: "Inconsolata"),
   // ...other options
 )

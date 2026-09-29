@@ -5,7 +5,7 @@
 
 #let flag(name) = sys.inputs.at(name, default: "false") == "true"
 
-#show: els-cas.with(
+#show: article.with(
   layout: sys.inputs.at("layout", default: "dc"),
   title: [A study of everything],
   alt-title: [An alternate title],
