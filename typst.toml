@@ -1,0 +1,16 @@
+[package]
+name = "els-cas"
+version = "0.1.0"
+entrypoint = "src/lib.typ"
+authors = ["Carlo Lucibello <@CarloLucibello>"]
+license = "MIT"
+description = "Elsevier CAS single- and double-column article template, ported from the cas-sc/cas-dc LaTeX classes"
+keywords = ["elsevier", "cas", "journal", "article", "paper", "cas-dc", "cas-sc"]
+categories = ["paper"]
+compiler = "0.15.0"
+exclude = ["els-cas-templates", "tests", "docs"]
+
+[template]
+path = "template"
+entrypoint = "main.typ"
+thumbnail = "thumbnail.png"
