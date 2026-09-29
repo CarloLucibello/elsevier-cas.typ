@@ -124,6 +124,12 @@ Tables have no strokes by default. Draw booktabs-style rules with `toprule`, `mi
 #figure(caption: [...], table(columns: 3, toprule, [A], [B], [C], midrule, [1], [2], [3], bottomrule))
 ```
 
+A table caption spans the column. To make it narrower, put the table in a block with a width, the equivalent of `\begin{table}[width=.9\linewidth]` with a `tabular*` of `\tblwidth`:
+
+```typ
+#figure(caption: [...], block(width: 90%, table(columns: (1fr, 1fr), ...)))
+```
+
 ### Bibliography
 
 The default style is `elsevier-harvard` (author–year), the scheme of `cas-model2-names.bst`. For numbered references, pass `#bibliography("refs.bib", style: "elsevier-with-titles")`.
@@ -143,8 +149,6 @@ The LaTeX classes use STIX Two for text and math, Computer Modern Sans for the r
 
 - Author groups (`augroup`, `collaboration`) and affiliations printed as footnotes (`\address[..][foot=true]`) are not ported.
 - Biography text runs beside the photo; it does not wrap below it.
-- Second-level enumerations are labelled "a." instead of "(a)".
-- Table captions span the column rather than the table width.
 - First-page notes always sit at the bottom of the first page or column.
 - A structured affiliation gets no comma after its last entry. LaTeX prints one unless that entry is `country`.
 - Monospace text (code, URLs, email addresses and ORCIDs) is set at 0.8em, the size Typst gives `raw` text. LaTeX sets it at the text size.

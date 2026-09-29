@@ -269,15 +269,48 @@
   }
 
   // Lists ------------------------------------------------------------------
-  set list(marker: ([•], [–], [∗], [·]))
-  set list(indent: 1.47em, body-indent: 0.5em, spacing: 10pt)
+  // As in LaTeX, the items of a list at depth k are indented by
+  // \leftmargin of that depth, and the label is right-aligned \labelsep
+  // before them (and overhangs to the left if it is too wide).
+  let list-label(depth, label) = box(
+    width: list-margins.at(calc.min(depth, 3)) - label-sep,
+    align(right, label),
+  )
+  // \labelitemi to \labelitemiv; LaTeX takes \textasteriskcentered and
+  // \textperiodcentered from the math font. The bullet of STIX Two is
+  // smaller than the one of STIX, unlike that of (built-in) New Computer
+  // Modern Math.
+  let markers = (
+    text(font: "New Computer Modern Math")[•],
+    text(weight: "bold")[–],
+    $ast.op$,
+    $dot.op$,
+  )
+  set list(
+    marker: depth => list-label(depth, markers.at(calc.rem(depth, 4))),
+    indent: 0pt,
+    body-indent: label-sep,
+    spacing: 10pt,
+  )
   show list: set block(above: 10pt, below: 10pt)
+  // Labels 1., (a), i., A. by depth, set upright. A pattern like
+  // "1.(a)i.A." cannot do this (all levels share its prefix and suffix),
+  // so a function receives the numbers of all levels (`full: true`). `full`
+  // is only set for this function, so that a user's pattern keeps its usual
+  // meaning; its label starts at the margin, like `enumerate[(1)]` in CAS.
+  let enum-numbering(..n) = {
+    let n = n.pos()
+    let depth = n.len() - 1
+    let pattern = ("1.", "(a)", "i.", "A.").at(calc.min(depth, 3))
+    list-label(depth, text(style: "normal", numbering(pattern, n.last())))
+  }
   set enum(
-    numbering: "1.a.i.A.",
-    indent: 1.25em,
-    body-indent: 0.5em,
+    numbering: enum-numbering,
+    indent: 0pt,
+    body-indent: label-sep,
     spacing: 3.2pt,
   )
+  show enum.where(numbering: enum-numbering): set enum(full: true)
   show enum: set block(above: 8pt, below: 8pt)
 
   // Equations --------------------------------------------------------------
@@ -303,6 +336,16 @@
   let sans-small(it) = with-font(fonts.sans, with-size(sizes.small, it))
   show figure.where(kind: image): sans-small
   show figure.where(kind: table): sans-small
+  // CAS sets a table caption in a \parbox as wide as the `width` option of
+  // the table (default: the column), which is also \tblwidth for the
+  // tabular. Here that width is the one of a block around the table.
+  show figure.where(kind: table): it => {
+    let width = if it.body.func() in (block, box) {
+      it.body.at("width", default: auto)
+    } else { auto }
+    show figure.caption: cap => block(width: width, cap)
+    it
+  }
   show figure.caption: it => {
     with-size(sizes.small, context {
       set par(first-line-indent: 0pt, justify: true)

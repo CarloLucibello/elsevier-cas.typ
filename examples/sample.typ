@@ -159,14 +159,16 @@ The `table` function is handy for marking up tabular material. The `toprule`, `m
 
 #figure(
   caption: [This is a test caption. This is a test caption. This is a test caption. This is a test caption. Use `scope: "parent"` if you want a two column spanned table.],
-  table(
+  // Like `\begin{table}[width=.9\linewidth]`: the caption takes the width
+  // of the block around the table.
+  block(width: 90%, table(
     columns: 4 * (1fr,),
     toprule,
     [Col 1], [Col 2], [Col 3], [Col4],
     midrule,
     ..range(5).map(_ => ([12345], [12345], [123], [12345])).flatten(),
     bottomrule,
-  ),
+  )),
 ) <tbl1>
 
 = Theorem and theorem like environments

@@ -55,6 +55,8 @@
 #let column-gutter = 18pt
 #let par-indent = 1.5em
 #let math-indent = 2.5em // \mathindent under the `fleqn` option
+#let list-margins = (25pt, 22pt, 18.7pt, 17pt) // \leftmargini to \leftmarginiv
+#let label-sep = 5pt // \labelsep
 
 /// Document-wide information needed after the front matter (by
 /// `print-credits` and `bio`).
