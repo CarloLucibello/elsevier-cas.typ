@@ -57,7 +57,7 @@ Until the package is on Typst Universe, install it locally. Clone this repositor
 | `journal` | `[Elsevier]` | Footer text: "Preprint submitted to *journal*". |
 | `blind` | `false` | Double-blind review: hides authors, affiliations, author notes, CRediT roles and biographies. |
 | `review` | `false` | Double line spacing. |
-| `long-title` | `false` | Allows front matter longer than one page (`longmktitle`). In the double-column layout the body then starts below it. |
+| `long-title` | `false` | Allows front matter longer than one page (`longmktitle`). Without it, a double-column front matter that does not fit on the first page is an error. In the double-column layout the body then starts below it, set in a `columns` container: `#pagebreak()` is turned into column breaks, and `#set page(...)` or `#page(...)` cannot be used in the body. |
 | `logos` | `true` | Icons in front of emails, URLs and social links; `false` writes "Email address:", "URL:" and so on instead. |
 | `fleqn` | `true` | Display equations aligned left and indented. |
 | `line-numbers` | `false` | Line numbers restarting on each page. |
@@ -73,8 +73,8 @@ Each author is a dictionary. Only `name` is required.
 | --- | --- |
 | `name` | A string is split at the last space into given names (printed grey, as in CAS) and surname. `(given: "William", family: "J. Hansen")` sets the split explicitly. |
 | `style` | `"chinese"`: surname first, split at the first space. |
-| `affiliations` | One id or an array of ids from `affiliations`, printed as letters a, b, … |
-| `corresponding` | `true` or `n`: corresponding-author mark with `n` asterisks. The mark refers to the `n`-th entry of `corresponding-notes`. |
+| `affiliations` | One id or an array of ids from `affiliations`, printed as letters a, b, … An id missing from `affiliations` is an error, except a number `n`, which is printed as the `n`-th letter, as in LaTeX. |
+| `corresponding` | `true` or `n`: corresponding-author mark with `n` asterisks. The mark refers to the `n`-th entry of `corresponding-notes`; it is an error if there is no such entry. |
 | `footnotes` | Number or array of numbers of `author-notes`. |
 | `email`, `url`, `orcid` | Strings or arrays of strings. They are collected into first-page notes. |
 | `twitter`, `facebook`, `linkedin`, `gplus` | Account names or full URLs. |
@@ -84,7 +84,7 @@ Each author is a dictionary. Only `name` is required.
 
 ### Affiliations
 
-An affiliation is either plain content or a dictionary like the keys of `\affiliation`. The entries are printed in the given order, each followed by a comma. The exception is `country`, which gets no separator. Add `<key>sep` to change the separator after an entry:
+An affiliation is either plain content or a dictionary like the keys of `\affiliation`. The entries are printed in the given order, each followed by a comma. The exceptions are `country` and the last entry, which get no separator. Add `<key>sep` to change the separator after an entry:
 
 ```typ
 "2": (organization: [World Scientific University], addressline: [Street 29],
@@ -146,6 +146,9 @@ The LaTeX classes use STIX Two for text and math, Computer Modern Sans for the r
 - Second-level enumerations are labelled "a." instead of "(a)".
 - Table captions span the column rather than the table width.
 - First-page notes always sit at the bottom of the first page or column.
+- A structured affiliation gets no comma after its last entry. LaTeX prints one unless that entry is `country`.
+- Monospace text (code, URLs, email addresses and ORCIDs) is set at 0.8em, the size Typst gives `raw` text. LaTeX sets it at the text size.
+- In the double-column layout, a front matter too tall for the first page is an error unless `long-title: true` is set. LaTeX lets it run off the page.
 
 ## License
 
