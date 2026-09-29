@@ -329,7 +329,16 @@
   // Figures and tables -----------------------------------------------------
   set figure(gap: 6pt)
   show figure: set block(above: 12pt, below: 12pt) // \intextsep
-  set table(stroke: none, inset: (x: 6pt, y: 2pt), align: start)
+  // Cells: \tabcolsep, and the strut of LaTeX tables (0.7\baselineskip
+  // above the baseline, 0.3\baselineskip below). Lines span 0.7em above to
+  // 0.3em below it, and \baselineskip is 2pt more than the size at \small
+  // and \normalsize.
+  set table(
+    stroke: none,
+    inset: (x: 6pt, top: 1.4pt, bottom: 0.6pt),
+    align: start,
+  )
+  show table: show-booktabs
   show figure.where(kind: table): set figure.caption(position: top)
   show figure.where(kind: table): set figure(gap: 5pt)
   // Figure and table environments are set in \sffamily\small.

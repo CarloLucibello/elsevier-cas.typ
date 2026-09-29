@@ -88,6 +88,18 @@ This paragraph follows a blank line after the equation and is indented. See @eq:
 
 / Term: Description of the term.
 
+// booktabs spacing, with the rules in a header and a spanning cell
+#figure(
+  caption: [A table with a narrower caption.],
+  block(width: 80%, table(
+    columns: (1fr, 1fr, 1fr),
+    table.header(toprule, table.cell(colspan: 2)[Span], [C], midrule),
+    [1], [2], [3],
+    [4], [5], [6],
+    bottomrule,
+  )),
+)
+
 #lorem(100)
 
 // A column break under `long` (double column), else a page break.

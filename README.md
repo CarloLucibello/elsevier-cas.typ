@@ -118,7 +118,7 @@ Figures and tables are captioned in a small sans-serif font: "**Figure 1:** …"
 #figure(image("wide.png"), caption: [...], placement: top, scope: "parent")
 ```
 
-Tables have no strokes by default. Draw booktabs-style rules with `toprule`, `midrule` and `bottomrule`:
+Tables have no strokes, and rows are spaced as in LaTeX. Draw booktabs rules with `toprule`, `midrule` and `bottomrule`; like booktabs, they leave some space above and below them:
 
 ```typ
 #figure(caption: [...], table(columns: 3, toprule, [A], [B], [C], midrule, [1], [2], [3], bottomrule))
