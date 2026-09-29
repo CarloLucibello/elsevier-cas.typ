@@ -127,7 +127,7 @@ Tables have no strokes, and rows are spaced as in LaTeX. Draw booktabs rules wit
 A table caption spans the column. To make it narrower, put the table in a block with a width, the equivalent of `\begin{table}[width=.9\linewidth]` with a `tabular*` of `\tblwidth`:
 
 ```typ
-#figure(caption: [...], block(width: 90%, table(columns: (1fr, 1fr), ...)))
+#figure(caption: [...], block(width: 90%, table(columns: (1fr, 1fr), [...], [...])))
 ```
 
 ### Bibliography
