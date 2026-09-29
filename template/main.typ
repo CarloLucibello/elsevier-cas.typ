@@ -1,6 +1,6 @@
-#import "@preview/els-cas:0.1.0": *
+#import "@preview/elsevier-cas-unofficial:0.1.0": *
 
-#show: els-cas.with(
+#show: article.with(
   // "dc" for double-column journals (cas-dc), "sc" for single-column (cas-sc)
   layout: "dc",
   title: [Title of the article],

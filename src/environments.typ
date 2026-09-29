@@ -28,7 +28,7 @@
 }
 
 /// Leave the space of booktabs around its rules: a table line takes no
-/// room, so the rows next to a rule get extra inset. Applied by `els-cas`.
+/// room, so the rows next to a rule get extra inset. Applied by `article`.
 #let show-booktabs(it) = {
   let fields = it.fields()
   let children = fields.remove("children")
@@ -162,7 +162,7 @@
 /// End-of-proof square pushed to the right margin (`\qed`).
 #let qed = [#h(1fr)$square$]
 
-/// Render theorem figures created by `new-theorem`; applied by `els-cas`.
+/// Render theorem figures created by `new-theorem`; applied by `article`.
 #let show-theorem(it) = {
   if type(it.kind) != str or not it.kind.starts-with(thm-kind-prefix) {
     return it

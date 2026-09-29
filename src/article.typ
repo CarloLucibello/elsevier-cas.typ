@@ -1,14 +1,14 @@
-// els-cas: a Typst port of Elsevier's CAS LaTeX classes (cas-sc.cls and
+// elsevier-cas-unofficial: a Typst port of Elsevier's CAS LaTeX classes (cas-sc.cls and
 // cas-dc.cls, v2.4).
 #import "globals.typ": *
 #import "utils.typ": *
 #import "frontmatter.typ": *
 #import "environments.typ": *
 
-// The `layout` argument of `els-cas` shadows the built-in function.
+// The `layout` argument of `article` shadows the built-in function.
 #let measure-layout = layout
 
-/// The els-cas template. Apply it with `#show: els-cas.with(...)`.
+/// The elsevier-cas-unofficial template. Apply it with `#show: article.with(...)`.
 ///
 /// Authors are dictionaries with the keys `name` (required; a string split
 /// into given names and surname at the last space, or `(given: .., family:
@@ -56,7 +56,7 @@
 /// - fonts (dictionary): overrides of `serif`, `sans`, `mono`, `math`.
 /// - lang (str): document language.
 /// -> content
-#let els-cas(
+#let article(
   layout: "dc",
   title: none,
   alt-title: none,

@@ -1,4 +1,4 @@
-// Constants shared by the els-cas modules. Values mirror cas-common.sty,
+// Constants shared by the elsevier-cas-unofficial modules. Values mirror cas-common.sty,
 // cas-sc.cls and cas-dc.cls (v2.4) and the 10pt LaTeX `article` class
 // they build on.
 
@@ -67,4 +67,4 @@
 
 /// Document-wide information needed after the front matter (by
 /// `print-credits` and `bio`).
-#let cas-info = state("els-cas-info", (authors: (), blind: false))
+#let cas-info = state("elsevier-cas-unofficial-info", (authors: (), blind: false))
