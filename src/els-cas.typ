@@ -47,7 +47,8 @@
 /// - blind (bool): hide author information for double-blind review.
 /// - review (bool): double line spacing.
 /// - long-title (bool): let a long front matter break across pages
-///   (`longmktitle`); in two-column layout the body then starts below it.
+///   (`longmktitle`); in two-column layout the body then starts below it,
+///   and `pagebreak()` in the body is emulated with column breaks.
 /// - logos (bool): icons before emails, URLs and social links.
 /// - fleqn (bool): left-align display equations.
 /// - line-numbers (bool): number the lines of each page.
@@ -100,10 +101,16 @@
   let author-notes = as-array(author-notes)
   let keywords = as-array(keywords)
 
+  let n-cor = calc.max(0, ..authors.map(corresponding-level))
   let corresponding-notes = if corresponding-notes == auto {
-    let n = calc.max(0, ..authors.map(corresponding-level))
-    range(n).map(_ => [Corresponding author])
+    range(n-cor).map(_ => [Corresponding author])
   } else { as-array(corresponding-notes) }
+  assert(
+    n-cor <= corresponding-notes.len(),
+    message: "an author has `corresponding: " + str(n-cor) + "`, which needs "
+      + str(n-cor) + " `corresponding-notes`; got "
+      + str(corresponding-notes.len()),
+  )
 
   let classifications = ()
   if msc != none {
@@ -198,7 +205,7 @@
   show raw.where(block: true): set par(leading: 4pt)
   show link: set text(fill: link-color)
   show link: it => if type(it.dest) == str and to-str(it.body) == it.dest {
-    with-font(fonts.mono, it)
+    with-mono(fonts.mono, it)
   } else { it }
   show ref: set text(fill: link-color)
   show cite: set text(fill: link-color)
@@ -407,19 +414,41 @@
     fonts: fonts,
   )
 
+  // Body footnotes are numbered after the author notes, if these are shown.
+  let first-footnote = if blind { 0 } else { author-notes.len() }
+
   if two-columns and not long-title {
     // \twocolumn[\MaketitleBox]: the title block spans both columns and the
-    // first-page notes go to the foot of the first column.
+    // first-page notes go to the foot of the first column. A float cannot
+    // break across pages, so a taller title block would overlap the footer.
+    context assert(
+      measure(title-block, width: page.width - 2 * geom.x).height
+        <= page.height - geom.top - geom.bottom,
+      message: "the front matter does not fit on the first page; "
+        + "set `long-title: true`",
+    )
     place(top, scope: "parent", float: true, clearance: 7.6pt, title-block)
     notes
-    counter(footnote).update(author-notes.len())
+    counter(footnote).update(first-footnote)
     body
   } else {
     notes
     title-block
-    counter(footnote).update(author-notes.len())
+    counter(footnote).update(first-footnote)
     if two-columns {
       v(7.6pt)
+      // Page breaks are not allowed inside the `columns` container: break
+      // columns until a new page starts. A weak break at the top of a page
+      // is skipped.
+      show pagebreak: it => context {
+        let pos = here().position()
+        let first-column = pos.x < page.width / 2
+        let at-top = pos.y <= geom.top + 3pt + 0.01pt
+        if not (it.weak and first-column and at-top) {
+          colbreak()
+          if first-column { colbreak() }
+        }
+      }
       block(above: 0pt, columns(geom.columns, body))
     } else {
       v(4.8pt)

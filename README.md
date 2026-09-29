@@ -2,7 +2,7 @@
 
 A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `cas-dc.cls` (double column), version 2.4. It reproduces the page geometry, front matter, first-page notes, running heads and body styles of the LaTeX output. The design takes cues from [`elsearticle`](https://github.com/maucejo/elsearticle), the Typst port of `elsarticle.cls`.
 
-![Title page of the sample article](thumbnail.png)
+![Title page of the sample article in the double-column (left) and single-column (right) layouts](docs/title-page.png)
 
 ## Usage
 
@@ -30,7 +30,7 @@ A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `
 #bibliography("refs.bib")
 ```
 
-[`template/main.typ`](template/main.typ) is a port of `cas-dc-sample.tex` that uses every feature. Change `layout: "dc"` to `"sc"` to get the single-column version. Start a new project from it with `typst init @preview/els-cas`.
+`typst init @preview/els-cas` starts a new project from [`template/main.typ`](template/main.typ), a short skeleton with placeholders and comments. [`examples/sample.typ`](examples/sample.typ) is a port of Elsevier's `cas-dc-sample.tex` that uses every feature. Change `layout: "dc"` to `"sc"` in either file to get the single-column version.
 
 Until the package is on Typst Universe, install it locally. Clone this repository to `~/.local/share/typst/packages/local/els-cas/0.1.0` on Linux, or `~/Library/Application Support/typst/packages/local/els-cas/0.1.0` on macOS, then import `@local/els-cas:0.1.0`.
 
@@ -149,4 +149,8 @@ The LaTeX classes use STIX Two for text and math, Computer Modern Sans for the r
 
 ## License
 
-The Typst code is released under the MIT license. The icons in `assets/` and the sample figures in `template/figs/` come from Elsevier's CAS LaTeX bundle, distributed under the LaTeX Project Public License.
+The package is released under three licenses, depending on the file:
+
+- The code in `src/` is under the [MIT license](LICENSE).
+- The starter project in `template/`, which `typst init` copies into new projects, is under [MIT-0](https://spdx.org/licenses/MIT-0.html), so you can use and redistribute the files it creates without attribution.
+- The icons in `assets/`, and the sample article in `examples/` (text, figures and bibliography), come from or are adapted from Elsevier's CAS LaTeX bundle, distributed under the [LaTeX Project Public License 1.3c](https://www.latex-project.org/lppl/lppl-1-3c/). The `examples/` folder is not part of the downloaded package.

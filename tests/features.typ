@@ -1,4 +1,4 @@
-// Exercises options not covered by template/main.typ.
+// Exercises options not covered by examples/sample.typ.
 // Compile from the repository root, e.g.
 //   typst compile --root . tests/features.typ --input long=true --input blind=true
 #import "/src/lib.typ": *
@@ -18,6 +18,7 @@
       name: "Ada Lovelace",
       affiliations: "lab",
       corresponding: true,
+      footnotes: 1,
       email: "ada@example.org",
       twitter: "ada",
       linkedin: "ada-lovelace",
@@ -35,16 +36,14 @@
   ),
   affiliations: (
     lab: [Analytical Engine Laboratory, London, UK],
-    uni: (
-      organization: [University of Cambridge],
-      city: [Cambridge],
-      country: [UK],
-    ),
+    // no `country`: no separator after the last entry
+    uni: (organization: [University of Cambridge], city: [Cambridge]),
   ),
+  author-notes: [An author note.],
   abstract: [#lorem(if flag("long") { 700 } else { 60 })
 
     #lorem(30)],
-  keywords: ([engines], [computation]),
+  keywords: ([Babbage's engines], [computation]),
   msc: (year: 2020, codes: [68Q05, 01A55]),
   jel: [C63],
   blind: flag("blind"),
@@ -57,7 +56,7 @@
 
 = Introduction <sec:intro>
 
-#lorem(40) A body footnote#footnote[Body footnotes continue after the author notes.].
+#lorem(40) A body footnote#footnote[Body footnotes continue after the author notes, unless `blind`.].
 
 A display equation
 $ E = m c^2 $ <eq:e>
@@ -90,6 +89,9 @@ This paragraph follows a blank line after the equation and is indented. See @eq:
 / Term: Description of the term.
 
 #lorem(100)
+
+// A column break under `long` (double column), else a page break.
+#pagebreak()
 
 #show: appendix
 = Proofs <app:proofs>

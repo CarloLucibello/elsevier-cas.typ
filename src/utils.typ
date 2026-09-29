@@ -16,6 +16,13 @@
   body
 }
 
+/// Switch to the monospace font at 0.8em, the size Typst gives `raw` text,
+/// so that URLs and email addresses match inline code.
+#let with-mono(font, body) = with-font(font, {
+  set text(size: 0.8em)
+  body
+})
+
 /// Vertical gap between two text lines so that their baselines end up
 /// `distance` apart (line boxes span 0.7em above to 0.3em below the baseline).
 #let baseline-gap(distance, above-size, below-size) = (
@@ -32,6 +39,10 @@
   if it == none { return "" }
   if type(it) == str { return it }
   if type(it) != content { return str(it) }
+  if it.func() == smartquote {
+    return if it.at("double", default: true) { "\"" } else { "'" }
+  }
+  if it.func() == linebreak { return " " }
   if it.has("text") { return to-str(it.text) }
   if it.has("children") { return it.children.map(to-str).join("") }
   if it.has("body") { return to-str(it.body) }
