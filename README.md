@@ -27,6 +27,12 @@ A Typst port of Elsevier's CAS LaTeX classes, `cas-sc.cls` (single column) and `
 
 = Introduction
 ...
+
+#show: appendix // sections after this point are numbered A, B, ...
+
+= Additional material
+...
+
 #bibliography("refs.bib")
 ```
 
